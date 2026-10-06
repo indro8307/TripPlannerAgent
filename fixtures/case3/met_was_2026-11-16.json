@@ -6,21 +6,7 @@
       "depart": "09:20",
       "arrive": "12:35",
       "bucket": "Saver",
-      "price": 79.00
-    },
-    {
-      "train": "175",
-      "depart": "11:05",
-      "arrive": "14:22",
-      "bucket": "Value",
-      "price": 89.00
-    },
-    {
-      "train": "99",
-      "depart": "15:05",
-      "arrive": "18:20",
-      "bucket": "Saver",
-      "price": 19.00
+      "price": 80.0
     }
   ]
 }

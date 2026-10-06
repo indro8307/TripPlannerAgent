@@ -2,9 +2,9 @@
   "date": "2026-11-19",
   "trips": [
     {
-      "train": "175",
-      "depart": "09:40",
-      "arrive": "12:55",
+      "train": "174",
+      "depart": "09:55",
+      "arrive": "13:10",
       "bucket": "Saver",
       "price": 55.0
     }

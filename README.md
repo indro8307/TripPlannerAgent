@@ -1,10 +1,10 @@
-# Amtrak fare agent
+# Trip planner agent
 
-A learning project: an AI agent that finds the cheapest Amtrak coach fare from Metropark (`MET`) to Washington (`WAS`), using sample data.
+A learning project: an AI agent that finds the cheapest 2-day Amtrak round trip from Metropark (`MET`) to Washington (`WAS`) and back, using sample data. A 2-day trip is two days and one night, so the return is the next day.
 
 ## How it works
 
-The OpenAI model named in `.env` (by default `gpt-6-luna`) reads the rules and decides which date to search. The only tool is `search_fares`, which reads a JSON fixture for one date and returns the trips. The loop in `agent.py` runs the tool, sends the JSON back to the model, and stops when the model answers or after 15 steps.
+The OpenAI model named in `.env` (by default `gpt-6-luna`) decides which departure dates to price, then picks the trip with the lowest total. Its only tool is `price_trip(depart_date)`. That tool sets the return to the next day, picks the cheapest eligible coach train each way from the JSON fixtures, and adds the two fares. The loop in `agent.py` runs the tool, sends the JSON back to the model, and stops when the model answers or after 15 steps.
 
 ## How to run
 
@@ -27,27 +27,46 @@ python agent.py
 
 ## Example output
 
-Request: "Find the lowest eligible fare."
+Request: "Find the cheapest 2-day round trip."
 
 ```text
-date:    2026-11-20
-train:   93
-depart:  12:30
-arrive:  15:48
-bucket:  Value
-price:   42
-reason:  Lowest eligible fare from MET to WAS in 2026-11-16 through 2026-11-20.
+step 1: price_trip depart_date=2026-11-16 total=137
+step 1: price_trip depart_date=2026-11-17 total=163
+step 1: price_trip depart_date=2026-11-18 total=158
+step 1: price_trip depart_date=2026-11-19 total=94
+step 1: price_trip depart_date=2026-11-20 total=none
+depart_date: 2026-11-19
+out_train:   175
+out_depart:  09:40
+out_arrive:  12:55
+out_bucket:  Saver
+out_price:   55
+return_date: 2026-11-20
+ret_train:   94
+ret_depart:  12:15
+ret_arrive:  15:32
+ret_bucket:  Value
+ret_price:   39
+total:       94
+reason:      Lowest 2-day trip from MET to WAS departing 2026-11-16 through 2026-11-20.
 ```
 
 ## Testing
 
-`baseline.py` is the answer key. It applies the same rules without a model. Compare its output with `python agent.py` for the cases in [GOAL.md](GOAL.md).
+`baseline.py` is the answer key. It calls `price_trip` for every departure date and picks the winner without a model. Compare its output with `python agent.py` for the five cases in [GOAL.md](GOAL.md).
 
 Select a case folder before either command:
 
 ```text
 $env:FIXTURE_CASE = "case1"
 python baseline.py
+python agent.py
 ```
 
-`case1` through `case5` live under `fixtures/`. Clear the setting with `Remove-Item Env:FIXTURE_CASE` to use the original fixture files again.
+`case1` through `case5` live under `fixtures/`. Clear the setting with `Remove-Item Env:FIXTURE_CASE` to use the main fixture files again.
+
+`check_price_trip.py` checks `price_trip` itself against the hand-worked totals in `GOAL.md`. Run it with `FIXTURE_CASE` cleared:
+
+```text
+python check_price_trip.py
+```
