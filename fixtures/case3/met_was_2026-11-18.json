@@ -2,18 +2,18 @@
   "date": "2026-11-18",
   "trips": [
     {
-      "train": "195",
-      "depart": "10:15",
-      "arrive": "13:40",
-      "bucket": "Value",
-      "price": 120.00
+      "train": "141",
+      "depart": "13:10",
+      "arrive": "16:28",
+      "bucket": "Flex",
+      "price": 50.0
     },
     {
-      "train": "87",
-      "depart": "15:00",
-      "arrive": "18:12",
-      "bucket": "Flex",
-      "price": 110.00
+      "train": "175",
+      "depart": "09:40",
+      "arrive": "12:55",
+      "bucket": "Value",
+      "price": 50.0
     }
   ]
 }

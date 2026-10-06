@@ -6,14 +6,7 @@
       "depart": "12:30",
       "arrive": "15:48",
       "bucket": "Value",
-      "price": 42.00
-    },
-    {
-      "train": "175",
-      "depart": "09:40",
-      "arrive": "12:55",
-      "bucket": "Flex",
-      "price": 71.00
+      "price": 90.0
     }
   ]
 }
