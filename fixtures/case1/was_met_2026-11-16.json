@@ -1,0 +1,26 @@
+{
+  "date": "2026-11-16",
+  "trips": [
+    {
+      "train": "94",
+      "depart": "09:15",
+      "arrive": "12:40",
+      "bucket": "Saver",
+      "price": 72.00
+    },
+    {
+      "train": "176",
+      "depart": "11:30",
+      "arrive": "14:48",
+      "bucket": "Value",
+      "price": 84.00
+    },
+    {
+      "train": "86",
+      "depart": "15:10",
+      "arrive": "18:25",
+      "bucket": "Saver",
+      "price": 22.00
+    }
+  ]
+}

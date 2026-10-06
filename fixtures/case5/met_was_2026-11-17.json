@@ -1,4 +1,12 @@
 {
   "date": "2026-11-17",
-  "trips": []
+  "trips": [
+    {
+      "train": "175",
+      "depart": "09:40",
+      "arrive": "12:55",
+      "bucket": "Value",
+      "price": 65.0
+    }
+  ]
 }
