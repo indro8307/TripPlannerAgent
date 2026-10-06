@@ -53,9 +53,19 @@ reason:      Lowest 2-day trip from MET to WAS departing 2026-11-16 through 2026
 
 ## Testing
 
-`baseline.py` is the answer key. It calls `price_trip` for every departure date and picks the winner without a model. Compare its output with `python agent.py` for the five cases in [GOAL.md](GOAL.md).
+`baseline.py` is the answer key. It calls `price_trip` for every departure date and picks the winner without a model. The six cases and their expected winners are in [GOAL.md](GOAL.md).
 
-Select a case folder before either command:
+Run every case through both scripts with one command:
+
+```text
+python run_cases.py
+python run_cases.py --baseline-only
+python run_cases.py case6
+```
+
+For each case it checks the baseline against the expected winner, checks that the agent's answer matches the baseline field by field, and checks that the agent priced every departure date. Each run is a separate process, because `tools.py` reads `FIXTURE_CASE` once when it is imported.
+
+To run one case by hand, select a case folder before either command:
 
 ```text
 $env:FIXTURE_CASE = "case1"
@@ -63,7 +73,7 @@ python baseline.py
 python agent.py
 ```
 
-`case1` through `case5` live under `fixtures/`. Clear the setting with `Remove-Item Env:FIXTURE_CASE` to use the main fixture files again.
+`case1` through `case6` live under `fixtures/`. Clear the setting with `Remove-Item Env:FIXTURE_CASE` to use the main fixture files again.
 
 `check_price_trip.py` checks `price_trip` itself against the hand-worked totals in `GOAL.md`. Run it with `FIXTURE_CASE` cleared:
 

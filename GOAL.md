@@ -162,6 +162,7 @@ A plain loop (`baseline.py`) and the agent both produce the winner above for thi
 3. A tie on one leg uses the earlier departure. The Nov 17 outbound is train 175, so that round trip totals $163 and is not the winner.
 4. A departure with no return trips is skipped.
 5. When no departure date has both legs, the result is no trip found.
+6. Two departure dates tie on total. The trip whose outbound train departs earlier wins, even though it is the later date. This is the one rule the model applies itself, not `price_trip`.
 
 A case fails when the winner differs, a departure date is missing from the trace, or a reported price never appeared in a tool result.
 
@@ -174,6 +175,9 @@ Each case has its own folder. Set `FIXTURE_CASE` to the folder name before runni
 | 3 | `fixtures/case3` | Nov 18 → Nov 19, trains 175 and 174, $95. Each leg has two $50 or $45 trains; the earlier one wins. |
 | 4 | `fixtures/case4` | Nov 18 → Nov 19, trains 195 and 174, $120. Nov 18 returns no trips, so the $40 departure on Nov 17 is skipped. |
 | 5 | `fixtures/case5` | no trip found. Every return file is empty. |
+| 6 | `fixtures/case6` | Nov 19 → Nov 20, trains 175 and 94, $100. Nov 17 also totals $100, but its outbound leaves at 13:10 and Nov 19's leaves at 09:40. |
+
+`python run_cases.py` runs every case through `baseline.py` and `agent.py`, each in its own process, and prints pass or fail. Add `--baseline-only` to skip the model.
 
 ## Order to build it in
 
