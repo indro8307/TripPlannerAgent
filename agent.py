@@ -108,12 +108,14 @@ def main() -> None:
     for step in range(1, MAX_STEPS + 1):
         trace("main", f"step {step}: sending the conversation to the model")
         # gpt-6-luna can call tools in Chat Completions only with reasoning off.
+        extra = {"reasoning_effort": "none"} if MODEL.startswith("gpt-6") else {}
         response = client.chat.completions.create(
             model=MODEL,
             messages=messages,
             tools=TOOLS,
-            reasoning_effort="none",
+            **extra,
         )
+        print(response)
         message = response.choices[0].message
         if not message.tool_calls:
             trace("main", "model returned a final answer")
