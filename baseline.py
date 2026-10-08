@@ -1,24 +1,12 @@
-from datetime import date, timedelta
+import argparse
 
+import config
 from tools import DESTINATION, ORIGIN, price_trip
-
-FIRST_DATE = date(2026, 11, 16)
-LAST_DATE = date(2026, 11, 20)
 
 
 def trace(where: str, message: str) -> None:
     # print(f"[trace] baseline.{where}: {message}")
     pass
-
-
-def each_date(first: date, last: date):
-    trace("each_date", f"from {first.isoformat()} through {last.isoformat()}")
-    current = first
-    while current <= last:
-        trace("each_date", f"yielding {current.isoformat()}")
-        yield current
-        current += timedelta(days=1)
-    trace("each_date", "finished")
 
 
 def beats(candidate: dict, current_best: dict) -> bool:
@@ -42,13 +30,13 @@ def beats(candidate: dict, current_best: dict) -> bool:
     return wins
 
 
-def find_cheapest_trip() -> dict | None:
-    trace("find_cheapest_trip", "start")
+def find_cheapest_trip(first: str, last: str, trip_days: int) -> dict | None:
+    trace("find_cheapest_trip", f"first={first} last={last} days={trip_days}")
+    result = price_trip(first, last, trip_days)
     best = None
-    for day in each_date(FIRST_DATE, LAST_DATE):
-        trip = price_trip(day.isoformat())
+    for trip in result["trips"]:
         if trip["total"] is None:
-            trace("find_cheapest_trip", f"skipping {day.isoformat()}, a leg is missing")
+            trace("find_cheapest_trip", f"skipping {trip['depart_date']}, a leg is missing")
             continue
         if best is None or beats(trip, best):
             best = trip
@@ -61,9 +49,35 @@ def find_cheapest_trip() -> dict | None:
     return best
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Find the cheapest MET–WAS round trip without a model."
+    )
+    parser.add_argument(
+        "--first",
+        dest="first_date",
+        help="First outbound date, YYYY-MM-DD. Default comes from TRIP_FIRST_DATE.",
+    )
+    parser.add_argument(
+        "--last",
+        dest="last_date",
+        help="Last outbound date, YYYY-MM-DD. Default comes from TRIP_LAST_DATE.",
+    )
+    parser.add_argument(
+        "--days",
+        type=int,
+        help="Days from outbound to return. 1 means the next day. Default 1.",
+    )
+    return parser.parse_args()
+
+
 def main() -> None:
     trace("main", "start")
-    best = find_cheapest_trip()
+    args = parse_args()
+    first = args.first_date or config.first_date()
+    last = args.last_date or config.last_date()
+    trip_days = config.days() if args.days is None else args.days
+    best = find_cheapest_trip(first, last, trip_days)
     if best is None:
         trace("main", "printing no trip found")
         print("no trip found")
@@ -86,8 +100,8 @@ def main() -> None:
     print(f"total:       {best['total']:g}")
     print(
         "reason:      "
-        f"Lowest 2-day trip from {ORIGIN} to {DESTINATION} departing "
-        f"{FIRST_DATE.isoformat()} through {LAST_DATE.isoformat()}."
+        f"Lowest round trip from {ORIGIN} to {DESTINATION} departing "
+        f"{first} through {last}, return {trip_days} day(s) later."
     )
 
 

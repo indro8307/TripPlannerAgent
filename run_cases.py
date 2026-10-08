@@ -81,12 +81,13 @@ def parse_answer(output: str) -> dict | str | None:
     return fields or None
 
 
-def priced_dates(output: str) -> set[str]:
-    dates = set()
+def priced_range(output: str) -> tuple[str | None, str | None]:
+    first = last = None
     for line in output.splitlines():
-        if line.startswith("step ") and "depart_date=" in line:
-            dates.add(line.split("depart_date=")[1].split()[0])
-    return dates
+        if line.startswith("step ") and "first_date=" in line and "last_date=" in line:
+            first = line.split("first_date=")[1].split()[0]
+            last = line.split("last_date=")[1].split()[0]
+    return first, last
 
 
 def check_baseline(case: str, answer) -> list[str]:
@@ -114,9 +115,12 @@ def check_agent(baseline_answer, agent_answer, output: str) -> list[str]:
                     f"{field}: expected {baseline_answer.get(field)}, "
                     f"got {agent_answer.get(field)}"
                 )
-    missing = [day for day in DEPARTURE_DATES if day not in priced_dates(output)]
-    if missing:
-        problems.append(f"dates not priced: {', '.join(missing)}")
+    first, last = priced_range(output)
+    if first != DEPARTURE_DATES[0] or last != DEPARTURE_DATES[-1]:
+        problems.append(
+            f"range not priced: expected {DEPARTURE_DATES[0]} through "
+            f"{DEPARTURE_DATES[-1]}, got {first} through {last}"
+        )
     return problems
 
 
