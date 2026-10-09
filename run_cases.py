@@ -12,6 +12,7 @@ import argparse
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 PROJECT = Path(__file__).resolve().parent
@@ -152,10 +153,13 @@ def main() -> None:
             failures += 1
         if args.baseline_only:
             continue
+        started = time.perf_counter()
         agent_output = run("agent.py", case)
+        elapsed = time.perf_counter() - started
         agent_answer = parse_answer(agent_output)
         if not report("agent", check_agent(baseline_answer, agent_answer, agent_output)):
             failures += 1
+        print(f"  agent: {elapsed:.1f}s")
 
     print("all passed" if failures == 0 else f"{failures} failed")
     sys.exit(1 if failures else 0)

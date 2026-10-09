@@ -26,8 +26,9 @@ days is how many days later the return is. days=1 means the return is the next
 day. If the user does not say how long the trip is, use days=1.
 Call price_trip once with those three values. Do not invent dates.
 
-The lowest total wins. On a tie, choose the trip whose outbound train departs
-earlier. If those also match, choose the earlier departure date.
+The lowest total wins. On a tie, compare only the outbound departure time of day (HH:MM), ignoring
+the date. The earlier time wins: 09:40 beats 13:10 even if the 13:10 train
+is on an earlier date. If the times also match, choose the earlier date.
 Skip a departure date whose total is null.
 If every total is null, reply with exactly: no trip found
 
