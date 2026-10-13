@@ -1,0 +1,25 @@
+case1
+  baseline: pass
+  agent: pass
+  agent: 57.1s
+case2
+  baseline: pass
+  agent: pass
+  agent: 36.7s
+case3
+  baseline: pass
+  agent: pass
+  agent: 41.5s
+case4
+  baseline: pass
+  agent: pass
+  agent: 37.6s
+case5
+  baseline: pass
+  agent: pass
+  agent: 25.6s
+case6
+  baseline: pass
+  agent: pass
+  agent: 34.5s
+all passed

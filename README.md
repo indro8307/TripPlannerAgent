@@ -1,10 +1,10 @@
 # Trip planner agent
 
-A learning project: an AI agent that finds the cheapest 2-day Amtrak round trip from Metropark (`MET`) to Washington (`WAS`) and back, using sample data. A 2-day trip is two days and one night, so the return is the next day.
+A learning project: an AI agent that finds the cheapest Amtrak round trip from Metropark (`MET`) to Washington (`WAS`) and back, using sample data. The date range and trip length come from the user request. By default the return is the next day (`days=1`).
 
 ## How it works
 
-The OpenAI model named in `.env` (by default `gpt-6-luna`) decides which departure dates to price, then picks the trip with the lowest total. Its only tool is `price_trip(depart_date)`. That tool sets the return to the next day, picks the cheapest eligible coach train each way from the JSON fixtures, and adds the two fares. The loop in `agent.py` runs the tool, sends the JSON back to the model, and stops when the model answers or after 15 steps.
+The OpenAI model named in `.env` (by default `gpt-6-luna`) reads the first date, last date, and days from the user message, calls `price_trip(first_date, last_date, days)` once, then picks the trip with the lowest total. If the user does not say how long the trip is, `days` is 1 (return the next day). The tool prices every departure from the first date through the last. For each departure it picks the cheapest eligible coach train each way from the JSON fixtures and adds the two fares. The loop in `agent.py` runs the tool, sends the JSON back to the model, and stops when the model answers or after 15 steps.
 
 ## How to run
 
@@ -19,22 +19,31 @@ OPENAI_API_KEY=sk-...
 OPENAI_MODEL=gpt-6-luna
 ```
 
+Optional trip settings in `.env` (or keep the defaults):
+
+```text
+TRIP_FIRST_DATE=2026-11-16
+TRIP_LAST_DATE=2026-11-20
+TRIP_DAYS=1
+```
+
 Then run:
 
 ```text
 python agent.py
+python agent.py --first 2026-11-16 --last 2026-11-20 --days 1
+python agent.py --prompt "Find the cheapest 3-night trip from 2026-11-16 through 2026-11-20."
+python baseline.py --days 2
 ```
+
+`--prompt` is the user message sent to the model. Use it to ask for a longer stay in plain language. `--first`, `--last`, and `--days` build a default request from those values.
 
 ## Example output
 
-Request: "Find the cheapest 2-day round trip."
+Request: "Find the cheapest round trip from MET to WAS. I can leave from 2026-11-16 through 2026-11-20. I want a 1-night trip (return the next day)."
 
 ```text
-step 1: price_trip depart_date=2026-11-16 total=137
-step 1: price_trip depart_date=2026-11-17 total=163
-step 1: price_trip depart_date=2026-11-18 total=158
-step 1: price_trip depart_date=2026-11-19 total=94
-step 1: price_trip depart_date=2026-11-20 total=none
+step 1: price_trip first_date=2026-11-16 last_date=2026-11-20 days=1 totals=2026-11-16=137,2026-11-17=163,2026-11-18=158,2026-11-19=94,2026-11-20=none
 depart_date: 2026-11-19
 out_train:   175
 out_depart:  09:40
@@ -48,12 +57,12 @@ ret_arrive:  15:32
 ret_bucket:  Value
 ret_price:   39
 total:       94
-reason:      Lowest 2-day trip from MET to WAS departing 2026-11-16 through 2026-11-20.
+reason:      Lowest round trip from MET to WAS for the dates and duration the user asked for.
 ```
 
 ## Testing
 
-`baseline.py` is the answer key. It calls `price_trip` for every departure date and picks the winner without a model. The six cases and their expected winners are in [GOAL.md](GOAL.md).
+`baseline.py` is the answer key. It calls `price_trip` once for the date range and picks the winner without a model. The six cases and their expected winners are in [GOAL.md](GOAL.md).
 
 Run every case through both scripts with one command:
 
@@ -63,7 +72,7 @@ python run_cases.py --baseline-only
 python run_cases.py case6
 ```
 
-For each case it checks the baseline against the expected winner, checks that the agent's answer matches the baseline field by field, and checks that the agent priced every departure date. Each run is a separate process, because `tools.py` reads `FIXTURE_CASE` once when it is imported.
+For each case it checks the baseline against the expected winner, checks that the agent's answer matches the baseline field by field, and checks that the agent priced the full date range. Each run is a separate process, because `tools.py` reads `FIXTURE_CASE` once when it is imported.
 
 To run one case by hand, select a case folder before either command:
 

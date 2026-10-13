@@ -3,6 +3,7 @@
 Run with FIXTURE_CASE unset, so the main sample fixtures are used.
 """
 
+import config
 from tools import price_trip
 
 EXPECTED = {
@@ -19,9 +20,20 @@ def leg_train(leg: dict | None) -> str | None:
 
 
 def main() -> None:
+    result = price_trip(
+        config.DEFAULT_FIRST_DATE, config.DEFAULT_LAST_DATE, config.DEFAULT_DAYS
+    )
+    if "error" in result:
+        print(f"FAIL  {result['error']}")
+        return
+    trips = {trip["depart_date"]: trip for trip in result["trips"]}
     failures = 0
     for depart_date, expected in EXPECTED.items():
-        trip = price_trip(depart_date)
+        trip = trips.get(depart_date)
+        if trip is None:
+            failures += 1
+            print(f"FAIL  {depart_date}: missing from result")
+            continue
         actual = (
             trip["return_date"],
             leg_train(trip["outbound"]),
@@ -33,6 +45,10 @@ def main() -> None:
         else:
             failures += 1
             print(f"FAIL  {depart_date}: expected {expected}, got {actual}")
+    extra = set(trips) - set(EXPECTED)
+    if extra:
+        failures += 1
+        print(f"FAIL  unexpected departures: {sorted(extra)}")
     print("all passed" if failures == 0 else f"{failures} failed")
 
 

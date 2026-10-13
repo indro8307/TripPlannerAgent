@@ -41,7 +41,6 @@ ADULTS = 1
 EARLIEST_DEPARTURE = "09:00"
 LATEST_DEPARTURE = "15:00"
 COACH_BUCKETS = {"Saver", "Value", "Flex"}
-RETURN_AFTER_DAYS = 1
 
 
 def is_eligible(trip: dict) -> bool:
@@ -91,33 +90,65 @@ def cheapest_eligible(origin: str, destination: str, day: str) -> dict | None:
     return best
 
 
-def price_trip(depart_date: str) -> dict:
-    """Price a 2-day, 1-night Metropark–Washington trip that starts on depart_date.
+def price_one_departure(depart: date, days: int) -> dict:
+    """Price one round trip that leaves on depart and returns `days` later.
 
-    The return is the next day. Each direction uses the cheapest eligible coach
-    train. The total is the sum of those two fares. A missing leg leaves the
-    total empty.
+    `days=1` means the return is the next day. A missing leg leaves total empty.
     """
-    try:
-        start = date.fromisoformat(depart_date)
-    except ValueError:
-        trace("price_trip", f"invalid depart_date={depart_date!r}")
-        return {"error": "depart_date must be YYYY-MM-DD"}
-
-    return_date = (start + timedelta(days=RETURN_AFTER_DAYS)).isoformat()
-    trace("price_trip", f"depart_date={depart_date} return_date={return_date}")
+    depart_date = depart.isoformat()
+    return_date = (depart + timedelta(days=days)).isoformat()
+    trace("price_one_departure", f"depart_date={depart_date} return_date={return_date}")
     outbound = cheapest_eligible(ORIGIN, DESTINATION, depart_date)
     return_trip = cheapest_eligible(DESTINATION, ORIGIN, return_date)
     if outbound is None or return_trip is None:
         total = None
-        trace("price_trip", "missing a leg, total is empty")
+        trace("price_one_departure", "missing a leg, total is empty")
     else:
         total = outbound["price"] + return_trip["price"]
-        trace("price_trip", f"total={total:g}")
+        trace("price_one_departure", f"total={total:g}")
     return {
         "depart_date": depart_date,
         "return_date": return_date,
         "outbound": outbound,
         "return_trip": return_trip,
         "total": total,
+    }
+
+
+def price_trip(first_date: str, last_date: str, days: int = 1) -> dict:
+    """Price the cheapest round trip for every departure from first_date through last_date.
+
+    `days` is how many days later the return is. `days=1` (the default) means
+    the next day. Each item in `trips` is one departure: both trains and the
+    total, or null total when a leg is missing.
+    """
+    try:
+        first = date.fromisoformat(first_date)
+        last = date.fromisoformat(last_date)
+    except (TypeError, ValueError):
+        trace("price_trip", f"invalid dates first_date={first_date!r} last_date={last_date!r}")
+        return {"error": "first_date and last_date must be YYYY-MM-DD"}
+
+    if days is None:
+        days = 1
+    try:
+        days = int(days)
+    except (TypeError, ValueError):
+        return {"error": "days must be an integer >= 1"}
+    if days < 1:
+        return {"error": "days must be an integer >= 1"}
+    if last < first:
+        return {"error": "last_date must be on or after first_date"}
+
+    trips = []
+    current = first
+    while current <= last:
+        trips.append(price_one_departure(current, days))
+        current += timedelta(days=1)
+    trace("price_trip", f"priced {len(trips)} departures from {first_date} through {last_date}")
+    return {
+        "first_date": first.isoformat(),
+        "last_date": last.isoformat(),
+        "days": days,
+        "trips": trips,
     }

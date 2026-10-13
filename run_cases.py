@@ -12,6 +12,7 @@ import argparse
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 PROJECT = Path(__file__).resolve().parent
@@ -23,7 +24,7 @@ EXPECTED = {
     "case3": ("2026-11-18", "95"),
     "case4": ("2026-11-18", "120"),
     "case5": None,
-    "case6": ("2026-11-17", "100"),
+    "case6": ("2026-11-19", "100"),
 }
 
 DEPARTURE_DATES = [f"2026-11-{day}" for day in range(16, 21)]
@@ -81,12 +82,13 @@ def parse_answer(output: str) -> dict | str | None:
     return fields or None
 
 
-def priced_dates(output: str) -> set[str]:
-    dates = set()
+def priced_range(output: str) -> tuple[str | None, str | None]:
+    first = last = None
     for line in output.splitlines():
-        if line.startswith("step ") and "depart_date=" in line:
-            dates.add(line.split("depart_date=")[1].split()[0])
-    return dates
+        if line.startswith("step ") and "first_date=" in line and "last_date=" in line:
+            first = line.split("first_date=")[1].split()[0]
+            last = line.split("last_date=")[1].split()[0]
+    return first, last
 
 
 def check_baseline(case: str, answer) -> list[str]:
@@ -114,9 +116,12 @@ def check_agent(baseline_answer, agent_answer, output: str) -> list[str]:
                     f"{field}: expected {baseline_answer.get(field)}, "
                     f"got {agent_answer.get(field)}"
                 )
-    missing = [day for day in DEPARTURE_DATES if day not in priced_dates(output)]
-    if missing:
-        problems.append(f"dates not priced: {', '.join(missing)}")
+    first, last = priced_range(output)
+    if first != DEPARTURE_DATES[0] or last != DEPARTURE_DATES[-1]:
+        problems.append(
+            f"range not priced: expected {DEPARTURE_DATES[0]} through "
+            f"{DEPARTURE_DATES[-1]}, got {first} through {last}"
+        )
     return problems
 
 
@@ -148,10 +153,13 @@ def main() -> None:
             failures += 1
         if args.baseline_only:
             continue
+        started = time.perf_counter()
         agent_output = run("agent.py", case)
+        elapsed = time.perf_counter() - started
         agent_answer = parse_answer(agent_output)
         if not report("agent", check_agent(baseline_answer, agent_answer, agent_output)):
             failures += 1
+        print(f"  agent: {elapsed:.1f}s")
 
     print("all passed" if failures == 0 else f"{failures} failed")
     sys.exit(1 if failures else 0)

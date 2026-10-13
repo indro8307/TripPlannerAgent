@@ -1,0 +1,46 @@
+case1
+  baseline: pass
+  agent: pass
+  agent: 31.8s
+case2
+  baseline: pass
+  agent: FAIL
+    out_train: expected 175, got 194
+    out_depart: expected 09:40, got 10:05
+    out_arrive: expected 12:55, got 13:28
+    out_price: expected 60, got 50
+    ret_train: expected 194, got 175
+    ret_depart: expected 10:05, got 09:40
+    ret_arrive: expected 13:28, got 12:55
+    ret_price: expected 50, got 60
+  agent: 7.7s
+case3
+  baseline: pass
+  agent: pass
+  agent: 8.0s
+case4
+  baseline: pass
+  agent: FAIL
+    depart_date: expected 2026-11-18, got 2026-11-16
+    out_train: expected 195, got 93
+    out_depart: expected 10:15, got 09:20
+    out_arrive: expected 13:40, got 12:35
+    out_bucket: expected Value, got Saver
+    out_price: expected 65, got 70
+    return_date: expected 2026-11-19, got 2026-11-17
+    ret_depart: expected 09:55, got 09:50
+    ret_arrive: expected 13:10, got 13:05
+    ret_bucket: expected Saver, got Value
+    ret_price: expected 55, got 60
+    total: expected 120, got 130
+  agent: 8.6s
+case5
+  baseline: pass
+  agent: FAIL
+    expected no trip found, got {'depart_date': '2026-11-17', 'out_train': '175', 'out_depart': '09:40', 'out_arrive': '12:55', 'out_bucket': 'Value', 'out_price': '65', 'return_date': '2026-11-18', 'ret_train': 'No train given', 'ret_depart': 'No time given', 'ret_arrive': 'No time given', 'ret_bucket': 'No bucket given', 'ret_price': 'No price given', 'total': '65'}
+  agent: 7.9s
+case6
+  baseline: pass
+  agent: pass
+  agent: 8.8s
+3 failed
