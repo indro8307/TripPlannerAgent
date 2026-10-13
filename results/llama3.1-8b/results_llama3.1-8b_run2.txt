@@ -1,0 +1,28 @@
+case1
+  baseline: pass
+  agent: FAIL
+    no answer ({"type":"function","name":"price_trip","parameters\":{\"first_date\":\"2026-11-16\",\"last_date\":\"2026-11-20\",\"days\":1}})
+    range not priced: expected 2026-11-16 through 2026-11-20, got None through None
+  agent: 3.6s
+case2
+  baseline: pass
+  agent: pass
+  agent: 8.4s
+case3
+  baseline: pass
+  agent: pass
+  agent: 9.9s
+case4
+  baseline: pass
+  agent: pass
+  agent: 8.8s
+case5
+  baseline: pass
+  agent: FAIL
+    expected no trip found, got {'depart_date': '2026-11-17', 'out_train': '175', 'out_depart': '09:40', 'out_arrive': '12:55', 'out_bucket': 'Value', 'out_price': '65', 'return_date': '2026-11-18', 'ret_train': '93', 'ret_depart': '09:20', 'ret_arrive': '12:35', 'ret_bucket': 'Saver', 'ret_price': '74', 'total': '139'}
+  agent: 8.5s
+case6
+  baseline: pass
+  agent: pass
+  agent: 9.2s
+2 failed
