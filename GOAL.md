@@ -119,7 +119,9 @@ A search that stops at the first complete trip reports Nov 16 at $137 and fails 
 
 ## Tools
 
-`search_fares(origin, destination, date, adults)` reads one fixture file and returns every saved trip for that date, including trips outside the rules. `price_trip` calls it. The model does not.
+`search_fares(origin, destination, date, adults)` queries SQLite (`trips.db`) and returns every saved trip for that date, including trips outside the rules. `price_trip` calls it. The model does not.
+
+JSON files under `fixtures/` are the source. `python load_fixtures.py` rebuilds the `fares` table from those files. Each row has a `dataset` (`main`, or `case1` through `case6`). `FIXTURE_CASE` selects which dataset `search_fares` reads. If it is unset, the dataset is `main`.
 
 `price_trip(first_date, last_date, days)` prices every departure from `first_date` through `last_date`. `days` is how many days later the return is. `days=1` means the next day. For each departure, the tool chooses the cheapest eligible train in each direction and adds the two fares.
 
@@ -156,7 +158,7 @@ A search that stops at the first complete trip reports Nov 16 at $137 and fails 
 
 A missing leg is `null`, and `total` is `null`. The model uses these totals. It does not invent fares or add the prices itself.
 
-Fixture files are `met_was_YYYY-MM-DD.json` and `was_met_YYYY-MM-DD.json`.
+Fixture files are still named `met_was_YYYY-MM-DD.json` and `was_met_YYYY-MM-DD.json`. They are loaded into the database, not opened by the tool at search time.
 
 ## Loop
 
@@ -170,7 +172,7 @@ Fixture files are `met_was_YYYY-MM-DD.json` and `was_met_YYYY-MM-DD.json`.
 
 Call `price_trip` once with the first date, last date, and days from the user request. If the user does not say how long the trip is, use `days=1`. Stop when the model returns a final answer in the output shape above, or after 15 steps.
 
-Each step is logged as one line: step number, tool name, first date, last date, days, and the totals returned.
+Each step is logged as one line: step number, tool name, first date, last date, days, and the totals returned. `run_cases.py` also prints how many seconds the agent took.
 
 ## Done when
 
@@ -185,7 +187,7 @@ A plain loop (`baseline.py`) and the agent both produce the winner above for thi
 
 A case fails when the winner differs, a departure date is missing from the trace, or a reported price never appeared in a tool result.
 
-Each case has its own folder. Set `FIXTURE_CASE` to the folder name before running `baseline.py` or `agent.py`.
+Each case has its own folder and the same name as a `dataset` in `fares`. Load the database once (`python load_fixtures.py`), then set env `FIXTURE_CASE` to the dataset name before running `baseline.py` or `agent.py`.
 
 
 | Case | Folder           | Expected winner                                                                                                                                    |
@@ -198,12 +200,14 @@ Each case has its own folder. Set `FIXTURE_CASE` to the folder name before runni
 | 6    | `fixtures/case6` | Nov 19 → Nov 20, trains 175 and 94, $100. Nov 17 also totals $100, but its outbound leaves at 13:10 and Nov 19's leaves at 09:40.                  |
 
 
-`python run_cases.py` runs every case through `baseline.py` and `agent.py`, each in its own process, and prints pass or fail. Add `--baseline-only` to skip the model.
+`python run_cases.py` runs every case through `baseline.py` and `agent.py`, each in its own process, and prints pass or fail plus agent runtime. Add `--baseline-only` to skip the model.
+
+The agent can use OpenAI or a local Ollama model. [colab_notebook.ipynb](colab_notebook.ipynb) runs the suite on Colab. Results from Llama 3.1 8B and Qwen3 8B and their comparison are in [MODEL_COMPARISON.md](MODEL_COMPARISON.md).
 
 ## Order to build it in
 
-1. Return fares only (WAS→MET fixtures, cheapest round trip), plus test cases.
-2. Move all data into SQLite, with tools that query it.
+1. Return fares only (WAS→MET fixtures, cheapest round trip), plus test cases. Done.
+2. Move all data into SQLite, with tools that query it. Done. `search_fares` reads `trips.db`.
 3. Add hotels and the combined `find_cheapest_trips` tool.
 4. Accept flexible natural-language requests and clarifying questions.
 5. Optionally, a simple UI.
