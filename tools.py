@@ -5,7 +5,7 @@ from pathlib import Path
 
 from db import connect
 
-DATASET = os.environ.get("FIXTURE_CASE") or "main"
+DATASET = os.environ.get("FIXTURE_CASE") or "case1"
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 case = os.environ.get("FIXTURE_CASE")
@@ -38,7 +38,7 @@ def search_fares(origin: str, destination: str, date: str, adults: int) -> dict:
         ).fetchall()
     finally:
         conn.close()
-        
+
     return {"date": date, "trips": [dict(row) for row in rows]}
 
 

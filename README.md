@@ -100,7 +100,7 @@ python agent.py
 
 `FIXTURE_CASE` is the `dataset` column in `fares` (`case1` through `case6`). `run_cases.py` sets it for you.
 
-`check_price_trip.py` checks `price_trip` against the hand-worked totals in `GOAL.md` on dataset `main` (the JSON files directly under `fixtures/`). Uncomment the `main` yield in `load_fixtures.py`, reload the database, then:
+`check_price_trip.py` checks `price_trip` against the hand-worked totals in `GOAL.md` on dataset `case1` which is the default. Clear `FIXTURE_CASE` first if you had set it for another case.
 
 ```text
 python check_price_trip.py

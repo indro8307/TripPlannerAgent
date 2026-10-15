@@ -121,7 +121,7 @@ A search that stops at the first complete trip reports Nov 16 at $137 and fails 
 
 `search_fares(origin, destination, date, adults)` queries SQLite (`trips.db`) and returns every saved trip for that date, including trips outside the rules. `price_trip` calls it. The model does not.
 
-JSON files under `fixtures/` are the source. `python load_fixtures.py` rebuilds the `fares` table from those files. Each row has a `dataset` (`main`, or `case1` through `case6`). `FIXTURE_CASE` selects which dataset `search_fares` reads. If it is unset, the dataset is `main`.
+JSON files under `fixtures/` are the source. `python load_fixtures.py` rebuilds the `fares` table from those files. Each row has a `dataset` (`case1` through `case6`). `FIXTURE_CASE` selects which dataset `search_fares` reads. If it is unset, the dataset is `case1`.
 
 `price_trip(first_date, last_date, days)` prices every departure from `first_date` through `last_date`. `days` is how many days later the return is. `days=1` means the next day. For each departure, the tool chooses the cheapest eligible train in each direction and adds the two fares.
 
