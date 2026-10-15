@@ -3,6 +3,10 @@ import os
 from datetime import date, timedelta
 from pathlib import Path
 
+from db import connect
+
+DATASET = os.environ.get("FIXTURE_CASE") or "main"
+
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 case = os.environ.get("FIXTURE_CASE")
 if case:
@@ -16,23 +20,26 @@ def trace(where: str, message: str) -> None:
 
 def search_fares(origin: str, destination: str, date: str, adults: int) -> dict:
     """Return saved fares for one origin, destination, and date.
-
-    `adults` is accepted so the tool signature matches GOAL.md. Fixture files
-    do not vary by party size yet.
     """
     trace(
         "search_fares",
         f"called with origin={origin} destination={destination} date={date} adults={adults}",
     )
-    filename = f"{origin.lower()}_{destination.lower()}_{date}.json"
-    path = FIXTURES / filename
-    if not path.is_file():
-        trace("search_fares", f"no fixture at {path.name}, returning no trips")
-        return {"date": date, "trips": []}
-    with path.open(encoding="utf-8") as handle:
-        result = json.load(handle)
-    trace("search_fares", f"loaded {path.name} with {len(result['trips'])} trips")
-    return result
+    conn = connect()
+    try:
+        rows = conn.execute(
+            """
+            SELECT train, depart, arrive, bucket, price
+            FROM fares
+            WHERE dataset = ? AND origin = ? AND destination = ? AND date = ?
+            ORDER BY id
+            """,
+            (DATASET, origin.upper(), destination.upper(), date),
+        ).fetchall()
+    finally:
+        conn.close()
+        
+    return {"date": date, "trips": [dict(row) for row in rows]}
 
 
 ORIGIN = "MET"
